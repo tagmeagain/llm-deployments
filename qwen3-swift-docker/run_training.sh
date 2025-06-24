@@ -15,7 +15,7 @@ swift sft \
     --task_type embedding \
     --model_type qwen3_emb \
     --train_type full \
-    --dataset sentence-transformers/stsb:positive \
+    --dataset data \
     --split_dataset_ratio 0.05 \
     --eval_strategy steps \
     --output_dir output \

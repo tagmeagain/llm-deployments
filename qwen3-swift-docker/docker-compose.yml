@@ -11,6 +11,7 @@ services:
     volumes:
       - ./output:/workspace/output
       - ./data:/workspace/data
+      - ../data:/workspace/data  # Mount data from parent directory
     ports:
       - "8888:8888"  # For Jupyter notebook if needed
     working_dir: /workspace
