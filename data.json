@@ -1,0 +1,5 @@
+{
+  "query": "What is machine learning?",
+  "pos": ["Machine learning is a subset of artificial intelligence that focuses on algorithms"],
+  "neg": ["Weather forecasting is important for agriculture", "Cooking recipes require precise measurements"]
+}
