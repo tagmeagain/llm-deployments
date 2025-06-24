@@ -8,6 +8,8 @@ services:
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
     volumes:
       - ./output:/workspace/output
       - ./data:/workspace/data
@@ -17,4 +19,11 @@ services:
     working_dir: /workspace
     stdin_open: true
     tty: true
-    shm_size: '8gb'  # Increase shared memory for large models 
+    shm_size: '16gb'  # Increased shared memory for large models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu] 

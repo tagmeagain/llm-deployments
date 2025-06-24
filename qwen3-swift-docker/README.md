@@ -26,6 +26,141 @@ sudo apt-get install -y nvidia-docker2
 sudo systemctl restart docker
 ```
 
+## 🚀 GPU Utilization Guide
+
+### 1. Verify GPU Setup Before Training
+
+Before starting training, ensure your GPU is properly accessible:
+
+```bash
+# Build and start the container
+docker-compose build
+docker-compose up -d
+
+# Access the container
+docker-compose exec qwen3-swift-training bash
+
+# Run GPU verification script
+./verify_gpu.sh
+```
+
+The verification script will check:
+- ✅ NVIDIA drivers and nvidia-smi availability
+- ✅ CUDA environment variables
+- ✅ PyTorch CUDA support
+- ✅ GPU memory allocation
+- ✅ SWIFT installation and GPU compatibility
+
+### 2. Optimize GPU Settings for Maximum Utilization
+
+Use the GPU optimization script to get the best settings for your hardware:
+
+```bash
+# Analyze your GPU and get optimal settings
+./optimize_gpu_utilization.sh
+```
+
+This script will:
+- 📊 Analyze your GPU memory and capabilities
+- 🎯 Calculate optimal batch sizes for different model sizes
+- 📈 Estimate memory utilization
+- 🚀 Generate optimized training commands
+
+### 3. Run Training with Maximum GPU Utilization
+
+Use the optimized training script that automatically calculates the best settings:
+
+```bash
+# Run training with automatic GPU optimization
+./run_training_optimized.sh
+```
+
+Or use the monitoring version for real-time GPU tracking:
+
+```bash
+# Run training with optimization and monitoring
+./run_training_with_monitoring.sh
+```
+
+### 4. Monitor GPU During Training
+
+Use the enhanced training script with built-in GPU monitoring:
+
+```bash
+# Run training with GPU monitoring
+./run_training_with_monitoring.sh
+```
+
+Or monitor GPU manually in a separate terminal:
+
+```bash
+# In another terminal, access the container
+docker-compose exec qwen3-swift-training bash
+
+# Start GPU monitoring
+./monitor_gpu.sh
+```
+
+### 5. Verify GPU is Being Fully Utilized
+
+During training, you should see:
+- **GPU Utilization**: Should be >90% during training
+- **Memory Usage**: Should be >80% of available GPU memory
+- **Temperature**: Should rise during intensive training
+- **Effective Batch Size**: Should be 32 or higher for good training
+
+### 6. Troubleshoot GPU Issues
+
+If GPU is not being fully utilized:
+
+1. **Check Docker GPU runtime**:
+   ```bash
+   docker run --rm --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi
+   ```
+
+2. **Verify container GPU access**:
+   ```bash
+   docker-compose exec qwen3-swift-training nvidia-smi
+   ```
+
+3. **Check PyTorch CUDA**:
+   ```bash
+   docker-compose exec qwen3-swift-training python3 -c "import torch; print(torch.cuda.is_available())"
+   ```
+
+4. **Test GPU memory allocation**:
+   ```bash
+   docker-compose exec qwen3-swift-training python3 -c "import torch; x = torch.randn(1000, 1000).cuda(); print('GPU memory:', torch.cuda.memory_allocated() / 1024**2, 'MB')"
+   ```
+
+5. **Run optimization analysis**:
+   ```bash
+   ./optimize_gpu_utilization.sh
+   ```
+
+## 🎯 Maximum GPU Utilization Techniques
+
+### Automatic Optimization
+The optimization scripts automatically:
+- **Calculate optimal batch sizes** based on GPU memory
+- **Adjust gradient accumulation** to maintain effective batch size of 32
+- **Estimate memory usage** to prevent OOM errors
+- **Recommend settings** for different model sizes
+
+### Manual Optimization Tips
+1. **Increase batch size** until you approach GPU memory limits
+2. **Use gradient accumulation** to maintain effective batch size
+3. **Enable DeepSpeed ZeRO-3** for memory optimization
+4. **Monitor GPU utilization** with real-time monitoring
+5. **Use larger models** if GPU memory allows
+6. **Adjust learning rate** if batch size changes significantly
+
+### GPU Memory Optimization
+- **Shared memory**: Increased to 16GB in docker-compose.yml
+- **CUDA memory allocation**: Optimized with `PYTORCH_CUDA_ALLOC_CONF`
+- **DeepSpeed ZeRO-3**: Reduces memory footprint
+- **Gradient accumulation**: Allows larger effective batch sizes
+
 ## Quick Start
 
 1. **Clone and setup:**
@@ -39,10 +174,12 @@ sudo systemctl restart docker
    docker-compose exec qwen3-swift-training bash
    ```
 
-3. **Run training:**
+3. **Optimize and run training:**
    ```bash
    cd /workspace
-   ./run_training.sh
+   ./verify_gpu.sh                           # Verify GPU setup
+   ./optimize_gpu_utilization.sh             # Get optimal settings
+   ./run_training_with_monitoring.sh         # Run with max GPU utilization
    ```
 
 ## Manual Setup
@@ -64,10 +201,12 @@ If you prefer manual setup:
    docker-compose exec qwen3-swift-training bash
    ```
 
-4. **Run training commands:**
+4. **Optimize and run training:**
    ```bash
    cd /workspace
-   ./run_training.sh
+   ./verify_gpu.sh                           # Verify GPU setup
+   ./optimize_gpu_utilization.sh             # Get optimal settings
+   ./run_training_with_monitoring.sh         # Run with max GPU utilization
    ```
 
 ## Training Configuration
@@ -78,7 +217,7 @@ The training script uses the exact configuration from the [SWIFT documentation](
 - **Dataset**: sentence-transformers/stsb:positive
 - **Training**: Full fine-tuning with DeepSpeed ZeRO-3
 - **Loss**: InfoNCE loss
-- **Batch size**: 4 (per device)
+- **Batch size**: Automatically optimized based on GPU memory
 - **Learning rate**: 6e-6
 - **Epochs**: 5
 
@@ -115,6 +254,16 @@ Edit `run_training.sh` to modify:
    docker-compose exec qwen3-swift-training nvidia-smi
    ```
 
+4. **Real-time GPU monitoring:**
+   ```bash
+   docker-compose exec qwen3-swift-training ./monitor_gpu.sh
+   ```
+
+5. **GPU optimization analysis:**
+   ```bash
+   docker-compose exec qwen3-swift-training ./optimize_gpu_utilization.sh
+   ```
+
 ## Troubleshooting
 
 ### GLIBC Version Issues
@@ -126,7 +275,8 @@ This Docker solution specifically addresses GLIBC version issues by using Ubuntu
 - Verify CUDA in container: `python -c "import torch; print(torch.cuda.is_available())"`
 
 ### Memory Issues
-- Reduce batch size in `run_training.sh`
+- Use `./optimize_gpu_utilization.sh` to get optimal batch sizes
+- Reduce batch size if you see OOM errors
 - Use smaller model size
 - Increase `shm_size` in `docker-compose.yml`
 
@@ -135,17 +285,30 @@ To use multiple GPUs:
 1. Change `nproc_per_node=8` in `run_training.sh`
 2. Ensure all GPUs are visible: `echo $CUDA_VISIBLE_DEVICES`
 
+### GPU Not Being Fully Utilized
+1. Run `./verify_gpu.sh` to check GPU setup
+2. Run `./optimize_gpu_utilization.sh` to get optimal settings
+3. Use `./run_training_optimized.sh` for automatic optimization
+4. Monitor GPU utilization with `./monitor_gpu.sh`
+5. Check training logs for CUDA errors
+6. Ensure batch size is optimized for your GPU memory
+
 ## Files Structure
 
 ```
 .
-├── Dockerfile              # Ubuntu 24.04 + CUDA + SWIFT environment
-├── docker-compose.yml      # Container orchestration
-├── run_training.sh         # Training script with exact SWIFT commands
-├── setup.sh               # Automated setup script
-├── README.md              # This file
-├── output/                # Training outputs (created by setup)
-└── data/                  # Dataset directory (created by setup)
+├── Dockerfile                          # Ubuntu 24.04 + CUDA + SWIFT environment
+├── docker-compose.yml                  # Container orchestration with GPU optimization
+├── run_training.sh                     # Basic training script
+├── run_training_optimized.sh           # Training with automatic GPU optimization
+├── run_training_with_monitoring.sh     # Enhanced training with GPU monitoring
+├── optimize_gpu_utilization.sh         # GPU optimization analysis script
+├── verify_gpu.sh                       # GPU verification script
+├── monitor_gpu.sh                      # Real-time GPU monitoring
+├── setup.sh                           # Automated setup script
+├── README.md                          # This file
+├── output/                            # Training outputs (created by setup)
+└── data/                              # Dataset directory (created by setup)
 ```
 
 ## Cleanup

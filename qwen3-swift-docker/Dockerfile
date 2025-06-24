@@ -1,5 +1,5 @@
-# Use NVIDIA CUDA base image with Ubuntu 24.04
-FROM nvidia/cuda:12.4-devel-ubuntu24.04
+# Use NVIDIA CUDA base image with Ubuntu 22.04
+FROM nvidia/cuda:12.4.0-devel-ubuntu22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -30,8 +30,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create symbolic links for python
-RUN ln -s /usr/bin/python3 /usr/bin/python
-RUN ln -s /usr/bin/pip3 /usr/bin/pip
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+RUN ln -sf /usr/bin/pip3 /usr/bin/pip
 
 # Upgrade pip
 RUN pip install --upgrade pip
