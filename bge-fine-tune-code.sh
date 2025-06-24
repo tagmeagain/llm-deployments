@@ -1,0 +1,28 @@
+CUDA_VISIBLE_DEVICES="0,1,2,3" \
+torchrun --nproc_per_node 4 \
+-m FlagEmbedding.finetune.embedder.encoder_only.m3 \
+--model_name_or_path BAAI/bge-m3 \
+--cache_dir ./cache/model \
+--train_data /workspace/data/your_dataset.jsonl \
+--cache_path ./cache/data \
+--train_group_size 8 \
+--query_max_len 128 \
+--passage_max_len 400 \
+--pad_to_multiple_of 8 \
+--knowledge_distillation False \
+--same_dataset_within_batch False \
+--output_dir /workspace/output/finetuned_bge-m3 \
+--overwrite_output_dir \
+--learning_rate 5e-6 \
+--num_train_epochs 2 \
+--per_device_train_batch_size 2 \
+--dataloader_drop_last True \
+--warmup_ratio 0.1 \
+--gradient_checkpointing \
+--logging_steps 20 \
+--save_steps 5000 \
+--negatives_cross_device \
+--temperature 0.05 \
+--sentence_pooling_method cls \
+--normalize_embeddings True \
+--unified_finetuning True
